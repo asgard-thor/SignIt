@@ -17,19 +17,19 @@ class SampleListener(Leap.Listener):
         if abs(translation[0])+abs(translation[1])+abs(translation[2])>10:
             print translation
 
-def sign_to_tab(frames):
-    t=frames[-1].timestamp-frames[0].timestamp
-    current_time=0
-    simplified_frames=[]
-    step=t/10
-    for frame in frames:
-        current_time+=1/frame.current_frames_per_second
-        if current_time>step*len(simplified_frames):
-            simplified_frames+=[frame]
-
-    retrun=[[{}],[{}]]
-    for i in range(len(simplified_frames)-1):
-        hands=simplified_frames[i+1]
+# def sign_to_tab(frames):
+#     t=frames[-1].timestamp-frames[0].timestamp
+#     current_time=0
+#     simplified_frames=[]
+#     step=t/10
+#     for frame in frames:
+#         current_time+=1/frame.current_frames_per_second
+#         if current_time>step*len(simplified_frames):
+#             simplified_frames+=[frame]
+#
+#     retrun=[[{}],[{}]]
+#     for i in range(len(simplified_frames)-1):
+#         hands=simplified_frames[i+1]
 
 
 
