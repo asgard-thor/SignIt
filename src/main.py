@@ -1,45 +1,70 @@
+#! /usr/bin/python
 import sys
 sys.path.insert(0, "../lib")
 import Leap, os, thread, time
 
 class SampleListener(Leap.Listener):
-
     def on_connect(self, controller):
         print "Connected"
-
+        self.frameMatrix=[[]]
+        self.listFrames=[]
+        self.temps = time.time()
 
     def on_frame(self, controller):
         frame = controller.frame()
-        #print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d" % (frame.id, frame.timestamp, len(frame.hands), len(frame.fingers))
-        #print frame.hands
-        #print frame.fingers
-        translation=frame.translation(controller.frame(10))
-        if abs(translation[0])+abs(translation[1])+abs(translation[2])>10:
-            print translation
-        print frame.hand(12).is_valid
+        temps=0.0
+        timeout=1000.0
+        if movement(frame, controller.frame(10)):
+            #reset chrono on se donne 300 ms jusqe la prochaine frame pour considerer le mouvement continu
+            temps = time.time()*1000.0 #temps en milisecondes
+            self.listFrames.append(frame) #changer ici
+            print len(self.listFrames)
+        else:
+            if time.time() >= temps+timeout and self.listFrames:  # si pas de mouvement pendant + d une seconde
+                # Si on a assez de frames pour que ce soit un VRAI mouvement
+                if len(self.listFrames)>35:
+                    self.frameMatrix.append(self.listFrames)
+                    #print self.listFrames
+                    sign_to_tab(self.listFrames)
+                self.listFrames=[]
+
+    def get_frameMatrix(self):
+        try:
+            return self.frameMatrix
+        except Exception as e:
+            print "Matrice vide"
+
+
+def movement(frame, frameminus10):
+    translation=frame.translation(frameminus10)
+    rotation_angle=frame.rotation_angle(frameminus10)
+    return (abs(translation[0])+abs(translation[1])+abs(translation[2])>10) or (rotation_angle>0.26)
 
 
 def sign_to_tab(frames):
-    t=frames[-1].timestamp-frames[0].timestamp0
+    t=frames[-1].timestamp-frames[0].timestamp
+    print t
     current_time=0
     simplified_frames=[]
     step=t/10
     for frame in frames:
-        current_time+=1/frame.current_frames_per_second
+
+        current_time+=1.0/frame.current_frames_per_second frames[0].timestamp
         if current_time>step*len(simplified_frames):
             simplified_frames+=[frame]
-
+    print simplified_frames
     retrun=[]
     hands=[]
     for hand in simplified_frames[0].hands:
         hands+=[hand.id]
+
     for i in range(len(simplified_frames)-1):
         isvalid=0
         for hand in hands:
             if not simplified_frames[i+1].hand(hand).is_valid:
                 isvalid+=1
         if isvalid !=0:
-            if len(hands)==1:
+            if len(hands)==1:c
                 if len(simplified_frames[i+1].hands)==1:
                     hands[0]=simplified_frames[i+1].hands[0].id
                 else:
@@ -73,6 +98,7 @@ def sign_to_tab(frames):
 
 
         retrun+=[]
+        print simplified_frames
         for j in range(hands):
             retrun[i]+=[{}]
             retrun[i][j]["rotation_angle"]=simplified_frames[i+1].hand(hands[j]).rotation_angle(simplified_frames[i])
@@ -80,10 +106,7 @@ def sign_to_tab(frames):
             retrun[i][j]["translation"]=simplified_frames[i+1].hand(hands[j]).translation(simplified_frames[i])
             retrun[i][j]["grab_strength"]=simplified_frames[i].hand(hands[j]).grab_strength
             retrun[i][j]["palm_normal"]=simplified_frames[i].hand(hands[j]).palm_normal
-
-
-
-
+    return retrun
 
 
 def main():
@@ -96,6 +119,8 @@ def main():
         sys.stdin.readline()
     except KeyboardInterrupt:
         pass
+    finally:
+        controller.remove_listener(listener)
 
 if __name__ == "__main__":
     main()
