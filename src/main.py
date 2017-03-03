@@ -43,16 +43,14 @@ def movement(frame, frameminus10):
 
 def sign_to_tab(frames):
     t=frames[-1].timestamp-frames[0].timestamp
-    print t
     current_time=0
     simplified_frames=[]
     step=t/10
     for frame in frames:
-
-        current_time+=1.0/frame.current_frames_per_second frames[0].timestamp
+        current_time= frame.timestamp - frames[0].timestamp
         if current_time>step*len(simplified_frames):
             simplified_frames+=[frame]
-    print simplified_frames
+
     retrun=[]
     hands=[]
     for hand in simplified_frames[0].hands:
@@ -64,7 +62,7 @@ def sign_to_tab(frames):
             if not simplified_frames[i+1].hand(hand).is_valid:
                 isvalid+=1
         if isvalid !=0:
-            if len(hands)==1:c
+            if len(hands)==1:
                 if len(simplified_frames[i+1].hands)==1:
                     hands[0]=simplified_frames[i+1].hands[0].id
                 else:
@@ -95,11 +93,8 @@ def sign_to_tab(frames):
                 pass
 
 
-
-
-        retrun+=[]
-        print simplified_frames
-        for j in range(hands):
+        retrun.append([])
+        for j in range(len(hands)):
             retrun[i]+=[{}]
             retrun[i][j]["rotation_angle"]=simplified_frames[i+1].hand(hands[j]).rotation_angle(simplified_frames[i])
             retrun[i][j]["rotation_axis"]=simplified_frames[i+1].hand(hands[j]).rotation_axis(simplified_frames[i])
