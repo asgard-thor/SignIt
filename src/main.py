@@ -1,40 +1,54 @@
 #! /usr/bin/python
 import sys
 sys.path.insert(0, "../lib")
-import Leap, os, thread, time
+import Leap, os, thread, time, json, pprint
 
 class SampleListener(Leap.Listener):
+
     def on_connect(self, controller):
         print "Connected"
-        self.frameMatrix=[[]]
         self.listFrames=[]
         self.temps = time.time()
+        self.indice_sign_table=0
+        self.sign_table=[]
 
     def on_frame(self, controller):
         frame = controller.frame()
         temps=0.0
-        timeout=1000.0
+        timeout=500.0
         if movement(frame, controller.frame(10)):
             #reset chrono on se donne 300 ms jusqe la prochaine frame pour considerer le mouvement continu
             temps = time.time()*1000.0 #temps en milisecondes
-            self.listFrames.append(frame) #changer ici
-            print len(self.listFrames)
+            self.listFrames.append(frame) # changer ici
+            print "\r"+str(len(self.listFrames))
         else:
-            if time.time() >= temps+timeout and self.listFrames:  # si pas de mouvement pendant + d une seconde
-                # Si on a assez de frames pour que ce soit un VRAI mouvement
+            if time.time() >= temps+timeout and self.listFrames:  # si pas de mouvement pendant timeout secondes
+                # Si on a assez de frames pour que ce soit un VRAI signe
                 if len(self.listFrames)>35:
-                    self.frameMatrix.append(self.listFrames)
+                    #penser a une file de sign_table
                     #print self.listFrames
-                    sign_to_tab(self.listFrames)
-                self.listFrames=[]
+                    self.sign_table.append(sign_to_tab(self.listFrames))
+                    self.listFrames=[]
+                    # on a 3 signes, on les moyene et affiche le JSON
+                    if len(self.sign_table) >= 3:
+                        print pprint.pprint(self.sign_table)
+                        self.sign_table = []
+
 
     def get_frameMatrix(self):
         try:
             return self.frameMatrix
-        except Exception as e:
+        except:
             print "Matrice vide"
 
+    def get_sign_table(self):
+        if self.indice_sign_table<= len(self.sign_table):
+            self.indice_sign_table+=1
+            return self.sign_table[indice_sign_table-1]
+        else:
+            return None
 
+# renvoie true tant que l'on maintient un mouvement de main.
 def movement(frame, frameminus10):
     translation=frame.translation(frameminus10)
     rotation_angle=frame.rotation_angle(frameminus10)
@@ -46,6 +60,8 @@ def sign_to_tab(frames):
     current_time=0
     simplified_frames=[]
     step=t/10
+
+    # recupere 10 frames significatives permettant de decrire un signe
     for frame in frames:
         current_time= frame.timestamp - frames[0].timestamp
         if current_time>step*len(simplified_frames):
@@ -57,6 +73,7 @@ def sign_to_tab(frames):
         hands+=[hand.id]
 
     for i in range(len(simplified_frames)-1):
+        print "i : "+str(i)
         isvalid=0
         for hand in hands:
             if not simplified_frames[i+1].hand(hand).is_valid:
@@ -87,7 +104,6 @@ def sign_to_tab(frames):
                 else:
                     #todo fail change number of hands
                     pass
-
             else:
                 # todo fail too many hands
                 pass
@@ -109,9 +125,10 @@ def main():
     controller = Leap.Controller()
     controller.add_listener(listener)
     # Keep this process running until Enter is pressed
-    print "Press Enter to quit..."
+
+    print "Press Q to quit, R to record (default), P to play"
     try:
-        sys.stdin.readline()
+        choice = sys.stdin.readline()
     except KeyboardInterrupt:
         pass
     finally:
