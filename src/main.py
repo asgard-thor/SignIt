@@ -1,4 +1,6 @@
 #! /usr/bin/python
+# coding=utf-8
+
 import sys
 sys.path.insert(0, "../lib")
 import Leap, os, thread, time, json, pprint
@@ -31,9 +33,18 @@ class SampleListener(Leap.Listener):
                     self.listFrames=[]
                     # on a 3 signes, on les moyene et affiche le JSON
                     if len(self.sign_table) >= 3:
-                        print pprint.pprint(self.sign_table)
+                        mean_sign_table = self.sign_table[0]
+                        # parcours les 3 tables de signes
+                        for tableIndex, signTable in enumerate(self.sign_table, 1):
+                            # parcours les 10 signes significatifs de chaque table
+                            for signIndex, sign in enumerate(signTable):
+                                for handIndex, hand in enumerate(sign):
+                                    for index, key in enumerate(hand):
+                                        # on peut effectuere des opérations sur les vecteurs comme des flottants (cf la doc)
+                                        mean(mean_sign_table[signIndex][handIndex][key], tableIndex, hand[key], 1)
                         self.sign_table = []
-
+                        print("your sign : ")
+                        pprint.pprint(mean_sign_table, stream=None, indent=1, width=80, depth=None)
 
     def get_frameMatrix(self):
         try:
@@ -47,6 +58,10 @@ class SampleListener(Leap.Listener):
             return self.sign_table[indice_sign_table-1]
         else:
             return None
+
+def mean(val1, weight1, val2, weight2):
+    return (val1*weight1 + val2*weight2) / (weight1+weight2)
+
 
 # renvoie true tant que l'on maintient un mouvement de main.
 def movement(frame, frameminus10):
@@ -112,10 +127,10 @@ def sign_to_tab(frames):
         retrun.append([])
         for j in range(len(hands)):
             retrun[i]+=[{}]
-            retrun[i][j]["rotation_angle"]=simplified_frames[i+1].hand(hands[j]).rotation_angle(simplified_frames[i])
+            retrun[i][j]["rotation_angle"]=simplified_frames[i+1].hand(hands[j]).rotation_angle(simplified_frames[i])#float
             retrun[i][j]["rotation_axis"]=simplified_frames[i+1].hand(hands[j]).rotation_axis(simplified_frames[i])
             retrun[i][j]["translation"]=simplified_frames[i+1].hand(hands[j]).translation(simplified_frames[i])
-            retrun[i][j]["grab_strength"]=simplified_frames[i].hand(hands[j]).grab_strength
+            retrun[i][j]["grab_strength"]=simplified_frames[i].hand(hands[j]).grab_strength#float
             retrun[i][j]["palm_normal"]=simplified_frames[i].hand(hands[j]).palm_normal
     return retrun
 
