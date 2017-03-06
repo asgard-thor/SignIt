@@ -3,7 +3,7 @@
 
 import sys
 sys.path.insert(0, "../lib")
-import Leap, os, thread, time, json, pprint
+import Leap, os, thread, time, json, pprint, marshal
 
 class SampleListener(Leap.Listener):
 
@@ -45,6 +45,8 @@ class SampleListener(Leap.Listener):
                         self.sign_table = []
                         print("your sign : ")
                         pprint.pprint(toJSON(mean_sign_table))
+                        addSign(mean_sign_table)#gery tu as un beau tshirt
+
 
     def get_frameMatrix(self):
         try:
@@ -59,17 +61,32 @@ class SampleListener(Leap.Listener):
         else:
             return None
 
-def toJSON(data):
-    for sign in data:
-        for hand in sign:
-            for index, key in enumerate(hand):
-                # print str(hand)+" : "+str(index)+" => "+str(key)
-                if type(hand[key]) is Leap.Vector:
-                    hand[key] = hand[key].to_float_array()
-    return json.dumps(data)
-
 def mean(val1, weight1, val2, weight2):
     return (val1*weight1 + val2*weight2) / (weight1+weight2)
+
+def addSign(sign):
+    signs = getSigns()
+    signs.append(sign)
+    saveSigns(signs)
+
+def saveSigns(signs):
+    fiel = open("./signs.db", 'w+b')
+    pprint.pprint(signs)
+    try:
+        marshal.dump(signs, fiel)
+    except:
+        print "l'erreur est ici"
+    fiel.close()
+
+def getSigns():
+    fiel = open("./signs.db", 'r+b')
+    retrun = []
+    try:
+        retrun = marshal.load(fiel)
+    except:
+        print "ou la"
+    fiel.close()
+    return retrun
 
 
 # renvoie true tant que l'on maintient un mouvement de main.
