@@ -44,7 +44,7 @@ class SampleListener(Leap.Listener):
                                         mean(mean_sign_table[signIndex][handIndex][key], tableIndex, hand[key], 1)
                         self.sign_table = []
                         print("your sign : ")
-                        pprint.pprint(mean_sign_table, stream=None, indent=1, width=80, depth=None)
+                        pprint.pprint(toJSON(mean_sign_table))
 
     def get_frameMatrix(self):
         try:
@@ -58,6 +58,15 @@ class SampleListener(Leap.Listener):
             return self.sign_table[indice_sign_table-1]
         else:
             return None
+
+def toJSON(data):
+    for sign in data:
+        for hand in sign:
+            for index, key in enumerate(hand):
+                # print str(hand)+" : "+str(index)+" => "+str(key)
+                if type(hand[key]) is Leap.Vector:
+                    hand[key] = hand[key].to_float_array()
+    return json.dumps(data)
 
 def mean(val1, weight1, val2, weight2):
     return (val1*weight1 + val2*weight2) / (weight1+weight2)
