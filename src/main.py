@@ -43,8 +43,6 @@ class SampleListener(Leap.Listener):
                                         # on peut effectuer des opérations sur les vecteurs (mul, div) comme des flottants (cf la doc)
                                         mean(mean_sign_table[signIndex][handIndex][key], tableIndex, hand[key], 1)
                         self.sign_table = []
-                        print("your sign : ")
-                        pprint.pprint(toJSON(mean_sign_table))
                         addSign(mean_sign_table)#gery tu as un beau tshirt
 
 
@@ -72,22 +70,15 @@ def addSign(sign):
 def saveSigns(signs):
     fiel = open("./signs.db", 'w+b')
     pprint.pprint(signs)
-    try:
-        marshal.dump(signs, fiel)
-    except:
-        print "l'erreur est ici"
+    marshal.dump(signs, fiel)
     fiel.close()
 
 def getSigns():
     fiel = open("./signs.db", 'r+b')
     retrun = []
-    try:
-        retrun = marshal.load(fiel)
-    except:
-        print "ou la"
+    retrun = marshal.load(fiel)
     fiel.close()
     return retrun
-
 
 # renvoie true tant que l'on maintient un mouvement de main.
 def movement(frame, frameminus10):
