@@ -96,6 +96,35 @@ def movement(frame, frameminus10):
     return (abs(translation[0])+abs(translation[1])+abs(translation[2])>10) or (rotation_angle>0.26)
 
 
+def distance(mvt1,mvt2):
+    retrun=0
+    for key in mvt1.keys():
+        if type(mvt1[key])==float:
+            retrun+=((mvt1[key]-mvt2[key])*3)**2#le coefficient 3 est là pour éviter que les vecteurs prennent trop d'importance sur les floats
+        elif type(mvt1[key])==tuple:
+            for i in range(mvt1[key]):
+                retrun+=(mvt1[key][i]-mvt2[key][i])**2
+        else:
+            print "type non reconnu dans le calcul de distance:"+type(mvt1[key])
+
+
+
+
+def ressemblance(base,entree):
+    retrun=0
+    if len(base)!=len(entree):
+        return None
+    else:
+        if len(base)==1:
+            retrun+=distance(base[0],entree[0])
+        else:
+            tmp1=distance(base[0],entree[0])+distance(base[1],entree[1])
+            tmp2=distance(base[0],entree[1])+distance(base[1],entree[0])
+            retrun+=tmp1 if tmp1<tmp2 else tmp2
+
+
+
+
 def sign_to_tab(frames):
     t=frames[-1].timestamp-frames[0].timestamp
     current_time=0
