@@ -40,7 +40,7 @@ class SampleListener(Leap.Listener):
                             for signIndex, sign in enumerate(signTable):
                                 for handIndex, hand in enumerate(sign):
                                     for index, key in enumerate(hand):
-                                        # on peut effectuere des opérations sur les vecteurs comme des flottants (cf la doc)
+                                        # on peut effectuer des opérations sur les vecteurs (mul, div) comme des flottants (cf la doc)
                                         mean(mean_sign_table[signIndex][handIndex][key], tableIndex, hand[key], 1)
                         self.sign_table = []
                         print("your sign : ")
