@@ -30,21 +30,18 @@ class SampleListener(Leap.Listener):
                 # Si on a assez de frames pour que ce soit un VRAI signe
                 if len(self.listFrames)>35:
                     self.sign_table.append(sign_to_tab(self.listFrames))
-                    self.listFrames=[]
-                    # on a 3 signes, on les moyene et affiche le JSON
-                    if len(self.sign_table) >= 3:
-                        mean_sign_table = self.sign_table[0]
-                        # parcours les 3 tables de signes
-                        for tableIndex, signTable in enumerate(self.sign_table, 1):
-                            # parcours les 10 signes significatifs de chaque table
-                            for signIndex, sign in enumerate(signTable):
-                                for handIndex, hand in enumerate(sign):
-                                    for index, key in enumerate(hand):
-                                        # on peut effectuer des opérations sur les vecteurs (mul, div) comme des flottants (cf la doc)
-                                        mean(mean_sign_table[signIndex][handIndex][key], tableIndex, hand[key], 1)
+
+                    if len(sys.argv) > 1:   # mode reconnaissance de signe
+                        print match(self.sign_table[0], get_saved_signs())
                         self.sign_table = []
-                        save_sign(mean_sign_table)
-                        print "signe enregistré !"
+                    else:                   # mode enregistrement de signe
+                        # au bout de 3 signes, on les moyenne et enregistre dans la DB
+                        if len(self.sign_table) >= 3:
+                            recordSign(self.sign_table)
+                            self.sign_table = []
+
+                    # vide la liste de frames une fois utilisée.
+                    self.listFrames=[]
 
 
     def get_frameMatrix(self):
@@ -60,6 +57,19 @@ class SampleListener(Leap.Listener):
         else:
             return None
 
+
+def recordSign(signTable):
+    mean_sign_table = signTable[0]
+    # parcours les 3 tables de signes
+    for tableIndex, signTable in enumerate(signTable, 1):
+        # parcours les 10 signes significatifs de chaque table
+        for signIndex, sign in enumerate(signTable):
+            for handIndex, hand in enumerate(sign):
+                for index, key in enumerate(hand):
+                    # on peut effectuer des opérations sur les vecteurs (mul, div) comme des flottants (cf la doc)
+                    mean(mean_sign_table[signIndex][handIndex][key], tableIndex, hand[key], 1)
+    save_sign(mean_sign_table)
+    print "signe enregistré !"
 def mean(val1, weight1, val2, weight2):
     return (val1*weight1 + val2*weight2) / (weight1+weight2)
 
