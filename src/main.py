@@ -122,12 +122,16 @@ def distance(mvt1,mvt2):
         if type(mvt1[key])==float:
             retrun+=((mvt1[key]-mvt2[key])*3)**2#le coefficient 3 est là pour éviter que les vecteurs prennent trop d'importance sur les floats
         elif type(mvt1[key])==tuple:
-            for i in range(mvt1[key]):
+            for i in range(len(mvt1[key])):
                 retrun+=(mvt1[key][i]-mvt2[key][i])**2
+        elif type(mvt1[key])==Leap.Vector:
+            m1=mvt1[key].to_tuple()
+            m2=mvt2[key].to_tuple()
+            for i in range(len(m1)):
+                retrun+=(m1[i]-m2[i])**2
         else:
-            print "type non reconnu dans le calcul de distance:"+type(mvt1[key])
-
-
+            print "distance() : type non reconnu dans le calcul de distance : %s" % str(type(mvt1[key]))
+    return retrun
 
 
 def ressemblance(base,entree):
@@ -141,6 +145,7 @@ def ressemblance(base,entree):
             tmp1=distance(base[0],entree[0])+distance(base[1],entree[1])
             tmp2=distance(base[0],entree[1])+distance(base[1],entree[0])
             retrun+=tmp1 if tmp1<tmp2 else tmp2
+    return retrun
 
 def match(signed,signs):
     tab=[]
