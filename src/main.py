@@ -27,8 +27,6 @@ class SampleListener(Leap.Listener):
             if time.time() >= temps+timeout and self.listFrames:  # si pas de mouvement pendant timeout secondes
                 # Si on a assez de frames pour que ce soit un VRAI signe
                 if len(self.listFrames)>35:
-                    #penser a une file de sign_table
-                    #print self.listFrames
                     self.sign_table.append(sign_to_tab(self.listFrames))
                     self.listFrames=[]
                     # on a 3 signes, on les moyene et affiche le JSON
@@ -43,7 +41,7 @@ class SampleListener(Leap.Listener):
                                         # on peut effectuer des opérations sur les vecteurs (mul, div) comme des flottants (cf la doc)
                                         mean(mean_sign_table[signIndex][handIndex][key], tableIndex, hand[key], 1)
                         self.sign_table = []
-                        addSign(mean_sign_table)#gery tu as un beau tshirt
+                        save_sign(mean_sign_table)
 
 
     def get_frameMatrix(self):
@@ -62,22 +60,52 @@ class SampleListener(Leap.Listener):
 def mean(val1, weight1, val2, weight2):
     return (val1*weight1 + val2*weight2) / (weight1+weight2)
 
-def addSign(sign):
-    signs = getSigns()
-    signs.append(sign)
-    saveSigns(signs)
+def vectorToFloat(data):
+    for sign in data:
+        for hand in sign:
+            for index, key in enumerate(hand):
+                if key in ['palm_normal', 'translation', 'rotation_axis']:
+                    hand[key] = hand[key].to_float_array()
+    return data
 
-def saveSigns(signs):
-    fiel = open("./signs.db", 'w+b')
-    pprint.pprint(signs)
-    marshal.dump(signs, fiel)
-    fiel.close()
+def floatToVector(data):
+    for signs in data:
+        for sign in signs:
+            for hand in sign:
+                for index, key in enumerate(hand):
+                    if key in ['palm_normal', 'translation', 'rotation_axis']:
+                        hand[key] = Leap.Vector(hand[key])
+    return data
 
-def getSigns():
-    fiel = open("./signs.db", 'r+b')
-    retrun = []
-    retrun = marshal.load(fiel)
-    fiel.close()
+# ajout un signe sign à la liste de signes signs
+def add_sign(sign, signs):
+    signs.append(vectorToFloat(sign))
+
+def load_signs():
+    try:
+        retrun = marshal.load(file("./signs.db", 'rba'))
+    except Exception as e:
+        print "Erreur"+e
+        retrun=[]
+    return retrun
+
+def store_signs(signs):
+    marshal.dump(signs, file("./signs.db", 'wba'))
+
+def save_sign(sign):
+    signs=loadSigns()
+    addSign(sign, signs)
+    storeSigns(signs)
+
+def save_signs(list_sign):
+    signs=loadSigns()
+    for sign in list_sign:
+        addSign(sign, signs)
+    storeSigns(signs)
+
+def get_saved_signs():
+    retrun = floatToVector(loadSigns())
+    #pprint.pprint(retrun)
     return retrun
 
 # renvoie true tant que l'on maintient un mouvement de main.
