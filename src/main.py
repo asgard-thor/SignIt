@@ -23,7 +23,7 @@ class SampleListener(Leap.Listener):
         if movement(frame, controller.frame(10)):
             #reset chrono on se donne 300 ms jusqe la prochaine frame pour considerer le mouvement continu
             temps = time.time()*1000.0 #temps en milisecondes
-            self.listFrames.append(frame) # changer ici
+            self.listFrames.append(frame)
             print "\r"+str(len(self.listFrames))
         else:
             if time.time() >= temps+timeout and self.listFrames:  # si pas de mouvement pendant timeout secondes
@@ -44,6 +44,7 @@ class SampleListener(Leap.Listener):
                                         mean(mean_sign_table[signIndex][handIndex][key], tableIndex, hand[key], 1)
                         self.sign_table = []
                         save_sign(mean_sign_table)
+                        print "signe enregistré !"
 
 
     def get_frameMatrix(self):
@@ -106,7 +107,6 @@ def save_signs(list_sign):
 
 def get_saved_signs():
     retrun = floatToVector(load_signs())
-    #pprint.pprint(retrun)
     return retrun
 
 # renvoie true tant que l'on maintient un mouvement de main.
