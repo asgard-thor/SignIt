@@ -1,9 +1,11 @@
 #! /usr/bin/python
 # coding=utf-8
-
+from operator import itemgetter
 import sys
 sys.path.insert(0, "../lib")
 import Leap, os, thread, time, json, pprint, marshal
+
+TAUX_REDISTRIBUTION=2#1/TAUX_REDISTRIBUTION=%gardé à chaque pas de match
 
 class SampleListener(Leap.Listener):
 
@@ -85,7 +87,6 @@ def load_signs():
     try:
         retrun = marshal.load(file("./signs.db", 'rba'))
     except Exception as e:
-        print "Erreur"+e
         retrun=[]
     return retrun
 
@@ -93,18 +94,18 @@ def store_signs(signs):
     marshal.dump(signs, file("./signs.db", 'wba'))
 
 def save_sign(sign):
-    signs=loadSigns()
-    addSign(sign, signs)
-    storeSigns(signs)
+    signs=load_signs()
+    add_sign(sign, signs)
+    store_signs(signs)
 
 def save_signs(list_sign):
-    signs=loadSigns()
+    signs=load_signs()
     for sign in list_sign:
-        addSign(sign, signs)
-    storeSigns(signs)
+        add_sign(sign, signs)
+    store_signs(signs)
 
 def get_saved_signs():
-    retrun = floatToVector(loadSigns())
+    retrun = floatToVector(load_signs())
     #pprint.pprint(retrun)
     return retrun
 
@@ -140,6 +141,21 @@ def ressemblance(base,entree):
             tmp1=distance(base[0],entree[0])+distance(base[1],entree[1])
             tmp2=distance(base[0],entree[1])+distance(base[1],entree[0])
             retrun+=tmp1 if tmp1<tmp2 else tmp2
+
+def match(signed,signs):
+    tab=[]
+    for i in range(len(signed)):
+        for j in range(len(signs)):
+            if i ==0:
+                signs[j]+=[0]
+
+            signs[j][-1]+=ressemblance(signed[i],signs[j][i])
+        signs=sorted(signs, key=itemgetter(-1))
+        signs[:len(signs)//TAUX_REDISTRIBUTION]
+        if len(signs)==1:
+            return signs[0]
+    return signs[0]
+
 
 
 
