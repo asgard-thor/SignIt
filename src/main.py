@@ -4,6 +4,7 @@ from operator import itemgetter
 import sys
 sys.path.insert(0, "../lib")
 import Leap, os, thread, time, json, pprint, marshal
+import pyttsx
 
 TAUX_REDISTRIBUTION=2#1/TAUX_REDISTRIBUTION=%gardé à chaque pas de match
 
@@ -31,9 +32,14 @@ class SampleListener(Leap.Listener):
         else:
             if time.time() >= temps+timeout and self.listFrames:  # si pas de mouvement pendant timeout secondes
                 # Si on a assez de frames pour que ce soit un VRAI signe
-                if len(self.listFrames)>45:
+                if len(self.listFrames)>35:
                     if(self.mode.lower()!="r\n"):  # mode reconnaissance de signe
-                        print match(sign_to_tab(self.listFrames), get_saved_signs())
+                        word= match(sign_to_tab(self.listFrames), get_saved_signs())
+                        print word
+                        engine = pyttsx.init()
+                        engine.setProperty('rate',70)
+                        engine.say(word)
+                        engine.runAndWait()
                         self.sign_table = []
                     if(self.mode.lower()=="r\n"):       # mode enregistrement de signe
                         self.sign_table.append(sign_to_tab(self.listFrames))
