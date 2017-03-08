@@ -17,7 +17,6 @@ class SampleListener(Leap.Listener):
         print "Connected"
         self.listFrames=[]
         self.temps = time.time()
-        self.indice_sign_table=0
         self.sign_table=[]
 
     def on_frame(self, controller):
@@ -53,12 +52,6 @@ class SampleListener(Leap.Listener):
         except:
             print "Matrice vide"
 
-    def get_sign_table(self):
-        if self.indice_sign_table<= len(self.sign_table):
-            self.indice_sign_table+=1
-            return self.sign_table[indice_sign_table-1]
-        else:
-            return None
 
 def recordSign(signTable):
     mean_sign_table = signTable[0]
