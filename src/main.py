@@ -150,9 +150,7 @@ def distance(mvt1,mvt2):
 
 def ressemblance(base,entree):
     retrun=0
-    if len(base)!=len(entree):
-        return None
-    else:
+    if len(base)==len(entree):
         if len(base)==1:
             retrun+=distance(base[0],entree[0])
         else:
