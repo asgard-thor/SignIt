@@ -41,7 +41,7 @@ class SampleListener(Leap.Listener):
                             self.sign_table = []
 
                     # vide la liste de frames une fois utilisée.
-                    self.listFrames=[]
+                self.listFrames=[]
 
 
     def get_frameMatrix(self):
