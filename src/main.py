@@ -37,7 +37,8 @@ class SampleListener(Leap.Listener):
                         word= match(sign_to_tab(self.listFrames), get_saved_signs())
                         print word
                         engine = pyttsx.init()
-                        engine.setProperty('rate',70)
+                        engine.setProperty('rate',170)
+                        engine.setProperty('voice',"english")
                         engine.say(word)
                         engine.runAndWait()
                         self.sign_table = []
