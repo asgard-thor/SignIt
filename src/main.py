@@ -86,7 +86,7 @@ def floatToVector(data):
             for hand in sign:
                 for index, key in enumerate(hand):
                     if key in ['palm_normal', 'translation', 'rotation_axis']:
-                        hand[key] = Leap.Vector(hand[key])
+                        hand[key] = Leap.Vector(hand[key][0],hand[key][1],hand[key][2])
     return data
 
 # ajout un signe sign à la liste de signes signs
