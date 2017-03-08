@@ -254,15 +254,15 @@ def main():
     if mode != "q\n":
         try:
             listener = SampleListener()
-            listener.set_mode(mode)
+            listener.set_mode(mode if mode in ["r\n", "p\n"] else "r\n")
             controller = Leap.Controller()
             controller.add_listener(listener)
             while(True):
                 pass
         except KeyboardInterrupt:
-            print "bye bye"
             controller.remove_listener(listener)
 
+    print "bye bye"
 
 if __name__ == "__main__":
     main()
