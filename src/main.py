@@ -241,6 +241,7 @@ def sign_to_tab(frames):
             retrun[i][j]["rotation_axis"]=simplified_frames[i+1].hand(hands[j]).rotation_axis(simplified_frames[i])
             retrun[i][j]["translation"]=simplified_frames[i+1].hand(hands[j]).translation(simplified_frames[i])
             retrun[i][j]["grab_strength"]=simplified_frames[i].hand(hands[j]).grab_strength#float
+            retrun[i][j]["pinch_strength"]=simplified_frames[i].hand(hands[j]).pinch_strength#float
             retrun[i][j]["palm_normal"]=simplified_frames[i].hand(hands[j]).palm_normal
     return retrun
 
