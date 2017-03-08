@@ -43,7 +43,7 @@ class SampleListener(Leap.Listener):
                             recordSign(self.sign_table)
                             self.sign_table = []
 
-                    # vide la liste de frames une fois utilisée.
+                # vide la liste de frames une fois utilisée.
                 self.listFrames=[]
 
 
@@ -246,19 +246,22 @@ def sign_to_tab(frames):
 
 
 def main():
-    listener = SampleListener()
-    controller = Leap.Controller()
-    controller.add_listener(listener)
-    # Keep this process running until Enter is pressed
+    print "Press (q) to quit, (r) to record (default), (p) to play"
 
-    print "Press Q to quit, R to record (default), P to play"
-    try:
-        while (True):
-            pass
-    except KeyboardInterrupt:
-        pass
-    finally:
-        controller.remove_listener(listener)
+    mode = sys.stdin.readline()
+    # print mode
+    if mode != "q\n":
+        try:
+            listener = SampleListener()
+            listener.set_mode(mode)
+            controller = Leap.Controller()
+            controller.add_listener(listener)
+            while(True):
+                pass
+        except KeyboardInterrupt:
+            print "bye bye"
+            controller.remove_listener(listener)
+
 
 if __name__ == "__main__":
     main()
