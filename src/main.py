@@ -28,13 +28,12 @@ class SampleListener(Leap.Listener):
         else:
             if time.time() >= temps+timeout and self.listFrames:  # si pas de mouvement pendant timeout secondes
                 # Si on a assez de frames pour que ce soit un VRAI signe
-                if len(self.listFrames)>35:
-                    self.sign_table.append(sign_to_tab(self.listFrames))
-
+                if len(self.listFrames)>45:
                     if len(sys.argv) > 1:   # mode reconnaissance de signe
-                        print match(self.sign_table[0], get_saved_signs())
+                        print match(sign_to_tab(self.listFrames), get_saved_signs())
                         self.sign_table = []
                     else:                   # mode enregistrement de signe
+                        self.sign_table.append(sign_to_tab(self.listFrames))
                         # au bout de 3 signes, on les moyenne et enregistre dans la DB
                         if len(self.sign_table) >= 3:
                             recordSign(self.sign_table)
