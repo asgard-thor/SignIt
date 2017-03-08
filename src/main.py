@@ -56,9 +56,9 @@ class SampleListener(Leap.Listener):
         else:
             return None
 
-
 def recordSign(signTable):
     mean_sign_table = signTable[0]
+    name = raw_input("veuillez entrer le nom de votre signe\n")
     # parcours les 3 tables de signes
     for tableIndex, signTable in enumerate(signTable, 1):
         # parcours les 10 signes significatifs de chaque table
@@ -67,8 +67,10 @@ def recordSign(signTable):
                 for index, key in enumerate(hand):
                     # on peut effectuer des opérations sur les vecteurs (mul, div) comme des flottants (cf la doc)
                     mean(mean_sign_table[signIndex][handIndex][key], tableIndex, hand[key], 1)
+    mean_sign_table.append({"name":name})
     save_sign(mean_sign_table)
     print "signe enregistré !"
+
 def mean(val1, weight1, val2, weight2):
     return (val1*weight1 + val2*weight2) / (weight1+weight2)
 
@@ -168,7 +170,7 @@ def match(signed,signs):
         signs[:len(signs)//TAUX_REDISTRIBUTION]
         if len(signs)==1:
             return signs[0]
-    return signs[0]
+    return signs[0][-1]['name']
 
 
 
@@ -247,7 +249,8 @@ def main():
 
     print "Press Q to quit, R to record (default), P to play"
     try:
-        choice = sys.stdin.readline()
+        while (True):
+            pass
     except KeyboardInterrupt:
         pass
     finally:
