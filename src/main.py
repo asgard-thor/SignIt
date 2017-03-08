@@ -8,6 +8,10 @@ import Leap, os, thread, time, json, pprint, marshal
 TAUX_REDISTRIBUTION=2#1/TAUX_REDISTRIBUTION=%gardé à chaque pas de match
 
 class SampleListener(Leap.Listener):
+    mode="p"
+
+    def set_mode(self, mode):
+        self.mode=mode
 
     def on_connect(self, controller):
         print "Connected"
