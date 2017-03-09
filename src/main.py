@@ -16,41 +16,61 @@ class SampleListener(Leap.Listener):
 
     def on_connect(self, controller):
         print "Connected"
+        self.first = True
         self.listFrames=[]
         self.temps = time.time()
         self.sign_table=[]
+
 
     def on_frame(self, controller):
         frame = controller.frame()
         temps=0.0
         timeout=500.0
-        if movement(frame, controller.frame(10)):
-            #reset chrono on se donne 300 ms jusqe la prochaine frame pour considerer le mouvement continu
-            temps = time.time()*1000.0 #temps en milisecondes
-            self.listFrames.append(frame)
-            print "\r"+str(len(self.listFrames))
+        # si démarrage
+        if self.first:
+            controller.enable_gesture(Leap.Gesture.TYPE_SWIPE)
+            for gesture in frame.gestures():
+                if gesture.type is Leap.Gesture.TYPE_SWIPE:
+                    swipe = Leap.SwipeGesture(gesture)
+                    direction = swipe.direction
+                    palm = swipe.pointable.hand.palm_normal
+                    # comparaison du sens du swipe et du sens de la paume
+                    if (palm[0]<0 and direction[0]<0) or (palm[0]>0 and direction[0]>0):
+                        self.mode="p\n"
+                        self.first =False
+                        print "playing mode"
+                    else:
+                        self.mode="r\n"
+                        self.first =False
+                        print "recording mode"
         else:
-            if time.time() >= temps+timeout and self.listFrames:  # si pas de mouvement pendant timeout secondes
-                # Si on a assez de frames pour que ce soit un VRAI signe
-                if len(self.listFrames)>35:
-                    if(self.mode.lower()!="r\n"):  # mode reconnaissance de signe
-                        word= match(sign_to_tab(self.listFrames), get_saved_signs())
-                        print word
-                        engine = pyttsx.init()
-                        engine.setProperty('rate',170)
-                        engine.setProperty('voice',"english")
-                        engine.say(word)
-                        engine.runAndWait()
-                        self.sign_table = []
-                    if(self.mode.lower()=="r\n"):       # mode enregistrement de signe
-                        self.sign_table.append(sign_to_tab(self.listFrames))
-                        # au bout de 3 signes, on les moyenne et enregistre dans la DB
-                        if len(self.sign_table) >= 3:
-                            recordSign(self.sign_table)
+            if movement(frame, controller.frame(10)):
+                #reset chrono on se donne 300 ms jusqe la prochaine frame pour considerer le mouvement continu
+                temps = time.time()*1000.0 #temps en milisecondes
+                self.listFrames.append(frame)
+                print "\r"+str(len(self.listFrames))
+            else:
+                if time.time() >= temps+timeout and self.listFrames:  # si pas de mouvement pendant timeout secondes
+                    # Si on a assez de frames pour que ce soit un VRAI signe
+                    if len(self.listFrames)>35:
+                        if(self.mode.lower()!="r\n"):  # mode reconnaissance de signe
+                            word= match(sign_to_tab(self.listFrames), get_saved_signs())
+                            print word
+                            engine = pyttsx.init()
+                            engine.setProperty('rate',170)
+                            engine.setProperty('voice',"english")
+                            engine.say(word)
+                            engine.runAndWait()
                             self.sign_table = []
+                        if(self.mode.lower()=="r\n"):       # mode enregistrement de signe
+                            self.sign_table.append(sign_to_tab(self.listFrames))
+                            # au bout de 3 signes, on les moyenne et enregistre dans la DB
+                            if len(self.sign_table) >= 3:
+                                recordSign(self.sign_table)
+                                self.sign_table = []
 
-                # vide la liste de frames une fois utilisée.
-                self.listFrames=[]
+                    # vide la liste de frames une fois utilisée.
+                    self.listFrames=[]
 
 
     def get_frameMatrix(self):
@@ -247,18 +267,16 @@ def sign_to_tab(frames):
 def main():
     print "Press (q) to quit, (r) to record (default), (p) to play"
 
-    mode = sys.stdin.readline()
-    # print mode
-    if mode != "q\n":
-        try:
-            listener = SampleListener()
-            listener.set_mode(mode if mode in ["r\n", "p\n"] else "r\n")
-            controller = Leap.Controller()
-            controller.add_listener(listener)
-            while(True):
-                pass
-        except KeyboardInterrupt:
-            controller.remove_listener(listener)
+    listener = SampleListener()
+    #listener.set_mode(mode if mode in ["r\n", "p\n"] else "r\n")
+    controller = Leap.Controller()
+    controller.add_listener(listener)
+
+    try:
+        while(True):
+            pass
+    except KeyboardInterrupt:
+        controller.remove_listener(listener)
 
     print "bye bye"
 
