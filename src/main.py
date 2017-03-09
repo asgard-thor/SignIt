@@ -7,6 +7,7 @@ import Leap, os, thread, time, json, pprint, marshal
 import pyttsx
 
 TAUX_REDISTRIBUTION=2#1/TAUX_REDISTRIBUTION=%gardé à chaque pas de match
+NB_RECORD=3 #nombre de signe à faire pour enregistrer
 
 class SampleListener(Leap.Listener):
     mode="p"
@@ -28,6 +29,7 @@ class SampleListener(Leap.Listener):
         timeout=500.0
         # si démarrage
         if self.first:
+            print "swipe to select the mode\r",
             controller.enable_gesture(Leap.Gesture.TYPE_SWIPE)
             for gesture in frame.gestures():
                 if gesture.type is Leap.Gesture.TYPE_SWIPE:
@@ -38,38 +40,54 @@ class SampleListener(Leap.Listener):
                     if (palm[0]<0 and direction[0]<0) or (palm[0]>0 and direction[0]>0):
                         self.mode="p\n"
                         self.first =False
-                        print "playing mode"
+                        print "\nplaying mode"
                     else:
                         self.mode="r\n"
                         self.first =False
-                        print "recording mode"
+                        print "\nrecording mode"
         else:
             if movement(frame, controller.frame(10)):
+                if not self.listFrames:
+                     print "sign beginning"
                 #reset chrono on se donne 300 ms jusqe la prochaine frame pour considerer le mouvement continu
                 temps = time.time()*1000.0 #temps en milisecondes
                 self.listFrames.append(frame)
-                print "\r"+str(len(self.listFrames))
+                #print "\r"+str(len(self.listFrames))
             else:
                 if time.time() >= temps+timeout and self.listFrames:  # si pas de mouvement pendant timeout secondes
                     # Si on a assez de frames pour que ce soit un VRAI signe
-                    if len(self.listFrames)>35:
-                        if(self.mode.lower()!="r\n"):  # mode reconnaissance de signe
-                            word= match(sign_to_tab(self.listFrames), get_saved_signs())
-                            print word
-                            engine = pyttsx.init()
-                            engine.setProperty('rate',170)
-                            engine.setProperty('voice',"english")
-                            engine.say(word)
-                            engine.runAndWait()
+                    if(len(self.listFrames)>20 and self.mode.lower()!="r\n"):  # mode reconnaissance de signe
+                        st="sign ended"
+                        if len(self.listFrames)<20:
+                            st+=" before end, retry please"
+                        print st
+                        word= match(sign_to_tab(self.listFrames), get_saved_signs())
+                        print word
+                        engine = pyttsx.init()
+                        engine.setProperty('rate',170)
+                        engine.setProperty('voice',"english")
+                        engine.say(word)
+                        engine.runAndWait()
+                        self.sign_table = []
+                    elif(len(self.listFrames)>25 and self.mode.lower()=="r\n"):       # mode enregistrement de signe
+                        self.sign_table.append(sign_to_tab(self.listFrames))
+                        # au bout de 3 signes, on les moyenne et enregistre dans la DB
+                        st="sign ended"
+                        if len(self.listFrames)<20:
+                            st+=" before end, retry please"
+                        print st
+                        print "signe : "+str(len(self.sign_table))+"/"+str(NB_RECORD)
+                        if len(self.sign_table) >= NB_RECORD:
+                            recordSign(self.sign_table)
                             self.sign_table = []
-                        if(self.mode.lower()=="r\n"):       # mode enregistrement de signe
-                            self.sign_table.append(sign_to_tab(self.listFrames))
-                            # au bout de 3 signes, on les moyenne et enregistre dans la DB
-                            if len(self.sign_table) >= 3:
-                                recordSign(self.sign_table)
-                                self.sign_table = []
+                            #permet de changer de mode
+                            first= True
+                    else:
+                        st="sign ended"
+                        if len(self.listFrames)<20:
+                            st+=" before end, retry please"
+                        print st
 
-                    # vide la liste de frames une fois utilisée.
                     self.listFrames=[]
 
 
@@ -148,6 +166,7 @@ def get_saved_signs():
 def movement(frame, frameminus10):
     translation=frame.translation(frameminus10)
     rotation_angle=frame.rotation_angle(frameminus10)
+    #rotation et translation suffisants
     return (abs(translation[0])+abs(translation[1])+abs(translation[2])>10) or (rotation_angle>0.26)
 
 
@@ -216,7 +235,7 @@ def sign_to_tab(frames):
         hands+=[hand.id]
 
     for i in range(len(simplified_frames)-1):
-        print "i : "+str(i)
+        #print "i : "+str(i)
         isvalid=0
         for hand in hands:
             if not simplified_frames[i+1].hand(hand).is_valid:
