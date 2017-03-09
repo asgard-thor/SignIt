@@ -90,7 +90,7 @@ def recordSign(signTable):
             for handIndex, hand in enumerate(sign):
                 for index, key in enumerate(hand):
                     # on peut effectuer des opérations sur les vecteurs (mul, div) comme des flottants (cf la doc)
-                    mean(mean_sign_table[signIndex][handIndex][key], tableIndex, hand[key], 1)
+                    mean_sign_table[signIndex][handIndex][key] = mean(mean_sign_table[signIndex][handIndex][key], tableIndex, hand[key], 1)
     mean_sign_table.append({"name":name})
     save_sign(mean_sign_table)
     print "signe enregistré !"
