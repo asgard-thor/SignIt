@@ -81,7 +81,7 @@ class SampleListener(Leap.Listener):
                             recordSign(self.sign_table)
                             self.sign_table = []
                             #permet de changer de mode
-                            first= True
+                            self.first= True
                     else:
                         st="sign ended"
                         if len(self.listFrames)<20:
@@ -284,7 +284,7 @@ def sign_to_tab(frames):
 
 
 def main():
-    print "Press (q) to quit, (r) to record (default), (p) to play"
+    print "SignIt©"
 
     listener = SampleListener()
     #listener.set_mode(mode if mode in ["r\n", "p\n"] else "r\n")
